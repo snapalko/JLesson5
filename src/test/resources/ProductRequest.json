@@ -1,0 +1,22 @@
+{
+	"instanceId": null, // необязательный
+	"productType": "договор",
+	"productCode": "03.012.002",
+	"registerType": "1",
+	"mdmCode": "Клиент QQQ",
+	"contractNumber": "222555888",
+	"contractDate": "2023-10-14",
+	"priority": 3,
+	"interestRatePenalty": null,
+	"minimalBalance": null,
+	"thresholdAmount": null,
+	"accountingDetails": null,
+	"rateType": null,
+	"taxPercentageRate": null,
+	"technicalOverdraftLimitAmount": null,
+	"contractId": 1,
+	"BranchCode": "0021",
+	"IsoCurrencyCode": "RUB",
+	"urgencyCode": "00",
+	"ReferenceCode": null
+}

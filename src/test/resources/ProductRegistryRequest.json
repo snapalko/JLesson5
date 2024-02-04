@@ -1,0 +1,13 @@
+{
+	"instanceId": 1,
+	"registryTypeCode": "03.012.002_47533_ComSoLd",
+    "accountType": "Клиентский",
+    "currencyCode": "800",
+    "branchCode": "0022",
+    "priorityCode": "00",
+    "mdmCode": "15",
+    "clientCode": "РЖД",
+    "trainRegion": null,
+    "counter": null,
+    "salesCode": null
+}

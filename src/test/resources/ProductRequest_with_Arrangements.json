@@ -1,0 +1,39 @@
+{
+	"instanceId": 5, 
+	"productType": "ДБДС",
+	"productCode": "03.012.002",
+	"registerType": "1",
+	"mdmCode": "Клиент QQQ",
+	"contractNumber": "222555889",
+	"contractDate": "2023-10-14",
+	"priority": 3,
+	"interestRatePenalty": null,
+	"minimalBalance": null,
+	"thresholdAmount": null,
+	"accountingDetails": null,
+	"rateType": null,
+	"taxPercentageRate": null,
+	"technicalOverdraftLimitAmount": null,
+	"contractId": 1,
+	"branchCode": "0021",
+	"isoCurrencyCode": "RUB",
+	"urgencyCode": "00",
+	"referenceCode": null,
+	"arrangements":
+	[
+        {
+            "generalAgreementId": null,
+            "supplementaryAgreementId": null,
+			"arrangementType": "ДБДС",
+			"number": "222555890",
+			"openingDate": "2023-10-14"
+        },
+        {
+            "generalAgreementId": 123,
+            "supplementaryAgreementId": 321,
+			"arrangementType": "!!!ДБДС",
+			"number": "222555890111",
+			"openingDate": "2023-10-14"
+        }
+	]
+}
