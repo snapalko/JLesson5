@@ -10,6 +10,6 @@ public class Starter {
         System.out.println("Go to http://localhost:8080/corporate-settlement-account/create");
         System.out.println("for create Product Registry");
         System.out.println("or http://localhost:8080/corporate-settlement-instance/create");
-        System.out.println("for create Product and/or Agreements");
+        System.out.println("for create Product and/or Agreements.");
     }
 }
