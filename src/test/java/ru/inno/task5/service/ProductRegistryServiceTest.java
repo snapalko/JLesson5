@@ -24,17 +24,15 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ProductRegistryServiceTest {
     @Mock
-    private ProductService productService;
-    @Mock
     private ProductRegistryRepository productRegistryRepository;
     @Mock
-    private RefProductClassRepository refProductClassRepository;
+    private ProductService productService;
     @Mock
-    private RefProductRegistryTypeRepository refProductRegistryTypeRepository;
+    private RefProductClassService refProductClassService;
     @Mock
-    private AccountPoolRepository accountPoolRepository;
+    private RefProductRegistryTypeService refProductRegistryTypeService;
     @Mock
-    private ProductRepository productRepository;
+    private AccountPoolService accountPoolService;
     @Mock
     private TransactionalService transactionalService;
 
@@ -53,22 +51,22 @@ class ProductRegistryServiceTest {
         when(productRegistryRepository.findByProductIdAndType(request.getInstanceId(), request.getRegistryTypeCode())).thenReturn(Optional.empty());
         // Ищем код продукта
         RefProductRegistryType refProductRegistryType = new RefProductRegistryType(1L, request.getRegistryTypeCode(), "Хранение ДМ.", "03.012.002", "Клиентский");
-        when(refProductRegistryTypeRepository.findOneByValue(request.getRegistryTypeCode())).thenReturn(Optional.of(refProductRegistryType));
+        when(refProductRegistryTypeService.findOneByValue(request.getRegistryTypeCode())).thenReturn(refProductRegistryType);
 
         AccountTemp accountTemp = new AccountTemp(1L, "0022", "800", "15", "00", "03.012.002_47533_ComSoLd", "475335516415314841861");
-        when(accountPoolRepository.findAccount(request.getBranchCode(), request.getCurrencyCode(), request.getMdmCode(), request.getPriorityCode(),
-                request.getRegistryTypeCode())).thenReturn(Optional.of(accountTemp));
+        when(accountPoolService.findAccount(request.getBranchCode(), request.getCurrencyCode(), request.getMdmCode(), request.getPriorityCode(),
+                request.getRegistryTypeCode())).thenReturn(accountTemp);
 
         RefProductClass refProductClass = new RefProductClass(1L, "03.012.002", "03", "Розничный бизнес", "012", "Драг. металлы", "002", "Хранение");
-        when(refProductClassRepository.findOneByValue(
-                refProductRegistryType.getProduct_class_code())).thenReturn(Optional.of(refProductClass));
+        when(refProductClassService.findOneByValue(
+                refProductRegistryType.getProduct_class_code())).thenReturn(refProductClass);
 
         when(productService.getClientByMdm("РЖД")).thenReturn(159753L);
         when(productService.getProductNumber()).thenReturn("2142");
         when(productService.getProductPriority()).thenReturn(5);
         when(productService.getDateOfConclusion()).thenReturn(LocalDate.now());
 
-        when(productRepository.save(any())).then(returnsFirstArg());
+        when(productService.saveProduct(any())).then(returnsFirstArg());
         when(productRegistryRepository.save(any())).then(returnsFirstArg());
 
         Product product = new Product(1L, 159753L, "Розничный бизнес", "2142", 5, LocalDate.now());

@@ -1,12 +1,11 @@
 package ru.inno.task5.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.inno.task5.exception.BadRequestException;
 import ru.inno.task5.model.*;
-import ru.inno.task5.repositories.AccountPoolRepository;
 import ru.inno.task5.repositories.ProductRepository;
-import ru.inno.task5.repositories.RefProductClassRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,30 +18,29 @@ import static ru.inno.task5.exception.NotFoundException.notFoundException;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
-    private final RefProductClassRepository refProductClassRepository;
+    private final RefProductClassService refProductClassService;
     private final RefProductRegistryTypeService refProductRegistryTypeService;
-    private final AccountPoolRepository accountPoolRepository;
+    private final AccountPoolService accountPoolService;
     private final AgreementService agreementService;
-    private final TransactionalService transactionalService;
     private final ExceptionService exceptionService;
+    private final TransactionalService transactionalService;
+
 
     public ProductService(ProductRepository productRepository,
-                          RefProductClassRepository refProductClassRepository,
+                          RefProductClassService refProductClassService,
                           RefProductRegistryTypeService refProductRegistryTypeService,
-                          AccountPoolRepository accountPoolRepository,
+                          AccountPoolService accountPoolService,
                           AgreementService agreementService,
-                          TransactionalService transactionalService,
-                          ExceptionService exceptionService) {
+                          ExceptionService exceptionService,
+                          @Lazy TransactionalService transactionalService) {
         this.productRepository = productRepository;
-        this.refProductClassRepository = refProductClassRepository;
+        this.refProductClassService = refProductClassService;
         this.refProductRegistryTypeService = refProductRegistryTypeService;
-        this.accountPoolRepository = accountPoolRepository;
+        this.accountPoolService = accountPoolService;
         this.agreementService = agreementService;
-        this.transactionalService = transactionalService;
         this.exceptionService = exceptionService;
+        this.transactionalService = transactionalService;
     }
-
-    private RefProductClass refProductClass;
 
     public Long getClientByMdm(String mdmCode) {
         if (mdmCode != null)
@@ -95,7 +93,7 @@ public class ProductService {
 
             // Шаг 4.
             String productCode = productRequest.getProductCode();
-            refProductClass = getProductClass(productCode);
+            RefProductClass refProductClass = refProductClassService.findOneByValue(productCode);
             log.info("ProductClass: " + refProductClass);
 
             List<RefProductRegistryType> registerTypeList = refProductRegistryTypeService
@@ -103,7 +101,7 @@ public class ProductService {
             log.info("Массив ProductRegisterType: " + registerTypeList.get(0));
 
             // Шаг 5.
-            Product product = createProductInstance(productRequest);
+            Product product = createProductInstance(productRequest, refProductClass.getInternal_id());
             log.info("Продукт: " + product);
 
             List<Agreement> agreementList = new ArrayList<>();
@@ -117,10 +115,7 @@ public class ProductService {
             List<ProductRegistry> productRegistryList = new ArrayList<>();
             for (RefProductRegistryType rt : registerTypeList) {
                 String registerTypeCode = rt.getValue();
-                Account_pool accountPool = accountPoolRepository.findByRegistryTypeCode(registerTypeCode)
-                        .orElseThrow(notFoundException("Не найден Счет в справочнике Account_pool по типу регистра = <{0}>!",
-                                registerTypeCode)
-                        );
+                Account_pool accountPool = accountPoolService.findByRegistryTypeCode(registerTypeCode);
                 log.info("Pool счетов: " + accountPool);
 
                 ProductRegistry productRegistry = new ProductRegistry(product.getId(),
@@ -135,8 +130,10 @@ public class ProductService {
             log.info("массив ПР: " + productRegistryList);
 
             // Шаг 7.
-            responseProduct = transactionalService.saveProductAndProductRegistry(product,
-                    productRegistryList, agreementList);
+            responseProduct = transactionalService.saveProductAndProductRegistry(
+                    product,
+                    productRegistryList,
+                    agreementList);
 
         } else { // то изменяется состав ДС (сделка/доп.Соглашение)
             // Шаг 8.
@@ -157,17 +154,10 @@ public class ProductService {
         return responseProduct;
     }
 
-    private RefProductClass getProductClass(String productCode) {
-        return refProductClassRepository.findOneByValue(productCode)
-                .orElseThrow(notFoundException("Не найден RefProductClass с value = <{0}>!",
-                        productCode));
-    }
-
-    private Product createProductInstance(ProductRequest request) {
+    private Product createProductInstance(ProductRequest request, Long internalID) {
         System.out.println("получили " + request);
 
-        Product product = new Product(
-                refProductClass.getInternal_id(),
+        Product product = new Product(internalID,
                 getClientByMdm(request.getMdmCode()),
                 request.getProductType(),
                 request.getContractNumber(),
@@ -189,4 +179,9 @@ public class ProductService {
 
         return product;
     }
+
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
+
 }
