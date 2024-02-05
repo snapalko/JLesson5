@@ -1,12 +1,10 @@
 package ru.inno.task5.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.inno.task5.model.*;
-import ru.inno.task5.repositories.AgreementRepository;
-import ru.inno.task5.repositories.ProductRegistryRepository;
-import ru.inno.task5.repositories.ProductRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,49 +12,51 @@ import java.util.List;
 @Slf4j
 @Service
 public class TransactionalService {
-    private final ProductRepository productRepository;
-    private final ProductRegistryRepository productRegisterRepo;
-    private final AgreementRepository agreementRepository;
+    private final ProductService productService;
+    private final ProductRegistryService productRegistryService;
+    private final AgreementService agreementService;
 
-    public TransactionalService(ProductRepository productRepository,
-                                ProductRegistryRepository productRegisterRepo,
-                                AgreementRepository agreementRepository) {
-        this.productRepository = productRepository;
-        this.productRegisterRepo = productRegisterRepo;
-        this.agreementRepository = agreementRepository;
+    public TransactionalService(@Lazy ProductService productService,
+                                @Lazy ProductRegistryService productRegistryService,
+                                AgreementService agreementService) {
+        this.productService = productService;
+        this.productRegistryService = productRegistryService;
+        this.agreementService = agreementService;
     }
 
     @Transactional
-    public ResponseRegistry saveProductAndProductRegistry(Product product, ProductRegistry productRegistry) {
+    public ResponseRegistry saveProductAndProductRegistry(Product product,
+                                                          ProductRegistry productRegistry) {
         ResponseRegistry data = new ResponseRegistry();
 
-        productRepository.save(product);
+        product = productService.saveProduct(product);
         log.info("Сохранили продукт в БД и получили product id=" + product.getId());
 
         productRegistry.setProduct_id(product.getId());
         log.info(String.valueOf(productRegistry));
 
-        productRegisterRepo.save(productRegistry);
+        productRegistry = productRegistryService.saveProductRegistry(productRegistry);
         log.info("Сохранили продуктовый Регистр в БД с id=" + productRegistry.getId());
         data.setAccountId(productRegistry.getId().toString());
         return data;
     }
 
     @Transactional
-    public ResponseProduct saveProductAndProductRegistry(Product product, List<ProductRegistry> productRegistryList,
-                                              List<Agreement> agreementList) {
+    public ResponseProduct saveProductAndProductRegistry(Product product,
+                                                         List<ProductRegistry> productRegistryList,
+                                                         List<Agreement> agreementList) {
         ArrayList<String> registerId = new ArrayList<>();
         ArrayList<String> supplementaryAgreementId = new ArrayList<>();
         ResponseProduct data = new ResponseProduct();
 
-        productRepository.save(product);
+        product = productService.saveProduct(product);
         Long productId = product.getId();
         data.setInstanceId(productId.toString());
         log.info("Сохранили продукт в БД и получили product id=" + productId);
 
         for (ProductRegistry productRegistry : productRegistryList) {
             productRegistry.setProduct_id(productId);
-            productRegisterRepo.save(productRegistry);
+            productRegistry = productRegistryService.saveProductRegistry(productRegistry);
             registerId.add(productRegistry.getId().toString());
             log.info("Сохранили продуктовый Регистр в БД с id=" + productRegistry.getId());
         }
@@ -65,7 +65,7 @@ public class TransactionalService {
 
         for (Agreement agreement : agreementList) {
             agreement.setProduct_id(productId);
-            agreementRepository.save(agreement);
+            agreement = agreementService.saveAgreement(agreement);
             supplementaryAgreementId.add(agreement.getId().toString());
             log.info("Сохранили Доп.соглашение в БД с id=" + agreement.getId());
         }
@@ -84,7 +84,7 @@ public class TransactionalService {
 
         for (Agreement agreement : agreementList) {
             agreement.setProduct_id(productId);
-            agreementRepository.save(agreement);
+            agreement = agreementService.saveAgreement(agreement);
             supplementaryAgreementId.add(agreement.getId().toString());
             log.info("Сохранили Доп.соглашение к договору (id=" + productId + ") в БД с id=" + agreement.getId());
         }

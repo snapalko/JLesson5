@@ -59,4 +59,8 @@ public class AgreementService {
 
         return agreement;
     }
+
+    public Agreement saveAgreement(Agreement agreement) {
+        return agreementRepository.save(agreement);
+    }
 }

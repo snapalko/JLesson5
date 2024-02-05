@@ -7,12 +7,22 @@ import ru.inno.task5.repositories.RefProductRegistryTypeRepository;
 
 import java.util.List;
 
+import static ru.inno.task5.exception.NotFoundException.notFoundException;
+
 @Service
 public class RefProductRegistryTypeService {
     private final RefProductRegistryTypeRepository refProductRegistryTypeRepository;
 
     public RefProductRegistryTypeService(RefProductRegistryTypeRepository refProductRegistryTypeRepository) {
         this.refProductRegistryTypeRepository = refProductRegistryTypeRepository;
+    }
+
+    public RefProductRegistryType findOneByValue(String value) {
+        return refProductRegistryTypeRepository
+                .findOneByValue(value)
+                .orElseThrow(notFoundException(// вернуть Статус: 404/Данные не найдены
+                        "КодПродукта <{0}> не найден в Каталоге продуктов <tpp_ref_product_register_type> для данного типа Регистра",
+                        value));
     }
 
     public List<RefProductRegistryType> findAllByProductClassCodeAndAccountType(String productCode,
